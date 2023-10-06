@@ -12,7 +12,8 @@ import (
 
 type TODO struct{
 	Content string `json:"content"`
-	Done    string   `json:"done"`
+	Done    string `json:"done"`
+	Finish_time    string `json:"finish_time"`
 }
 
 var todos []TODO
@@ -21,19 +22,23 @@ func readTODO(){
 	file,_:=os.OpenFile("TODO.txt",os.O_RDWR,0666)
 	read,_:=io.ReadAll(file)
 	readline:=strings.Split(string(read),"\n")
-	lenth:=len(readline)/2
+	lenth:=len(readline)/3
 	var todo TODO
 	for i:=0;i<lenth;i++{
-		todo.Content,todo.Done=readline[i*2],readline[i*2+1]
+		todo.Content,todo.Done,todo.Finish_time=readline[i*3],readline[i*3+1],readline[i*3+2]
 		todos=append(todos,todo)
 	}
 	file.Close()
 }
+
+
 func add(text TODO){
 	file,_:=os.OpenFile("TODO.txt",os.O_APPEND,0666)
 	file.WriteString(text.Content)
 	file.WriteString("\n")
 	file.WriteString(text.Done)
+	file.WriteString("\n")
+	file.WriteString(text.Finish_time)
 	file.WriteString("\n")
 	file.Close()
 }
@@ -42,7 +47,7 @@ func del(ind int){
 	file,_:=os.OpenFile("TODO.txt",os.O_RDWR,0666)
 	read,_:=io.ReadAll(file)
 	readline:=strings.Split(string(read),"\n")
-	readline[ind*2],readline[ind*2+1]="has been deleted","has been deleted"
+	readline[ind*3],readline[ind*3+1],readline[ind*3+2]="has been deleted","has been deleted","has been deleted"
 	file.Truncate(0)
 	file.Seek(0,0)
 	for _,i:=range readline{
@@ -56,7 +61,7 @@ func change(text TODO,ind int){
 	file,_:=os.OpenFile("TODO.txt",os.O_RDWR,0666)
 	read,_:=io.ReadAll(file)
 	readline:=strings.Split(string(read),"\n")
-	readline[ind*2],readline[ind*2+1]=text.Content,text.Done
+	readline[ind*3],readline[ind*3+1],readline[ind*3+2]=text.Content,text.Done,text.Finish_time
 	file.Truncate(0)
 	file.Seek(0,0)
 	for _,i:=range readline{
@@ -73,7 +78,7 @@ func main() {
 	readTODO()
 
 
-	//add TODO
+	//增加 TODO
 	r.POST("/todo",func(c *gin.Context){
 		var todo TODO
 		c.BindJSON(&todo)
@@ -83,16 +88,17 @@ func main() {
 		c.JSON(200,gin.H{"status":"ok"})
 	})
 
-	//del TODO
+	//删除 TODO
 	r.DELETE("/todo/:index",func (c *gin.Context)  {
 		index,_:=strconv.Atoi(c.Param("index"))
 		todos[index].Content=`has been deleted`
 		todos[index].Done=`has been deleted`
+		todos[index].Finish_time=`has been deleted`
 		del(index)
 		c.JSON(200,gin.H{"status":"ok"})
 	})
 
-	//更新
+	//更新 TODO
 	r.POST("/todo/:index",func(c *gin.Context){
 		index,_:=strconv.Atoi(c.Param("index"))
 		var todo TODO
@@ -102,12 +108,12 @@ func main() {
 		c.JSON(200,gin.H{"status":"ok"})
 	})
 
-	//列出
+	//列出 TODO
 	r.GET("/todo",func(c *gin.Context) {
 		c.JSON(200,todos)
 	})
 
-	//查询
+	//查询 TODO
 	r.GET("/todo/:index",func (c *gin.Context)  {
 		index,_:=strconv.Atoi(c.Param("index"))
 		if index>len(todos) {
