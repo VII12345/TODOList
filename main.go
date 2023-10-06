@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +17,18 @@ type TODO struct{
 
 var todos []TODO
 
+func readTODO(){
+	file,_:=os.OpenFile("TODO.txt",os.O_RDWR,0666)
+	read,_:=io.ReadAll(file)
+	readline:=strings.Split(string(read),"\n")
+	lenth:=len(readline)/2
+	var todo TODO
+	for i:=0;i<lenth;i++{
+		todo.Content,todo.Done=readline[i*2],readline[i*2+1]
+		todos=append(todos,todo)
+	}
+	file.Close()
+}
 func add(text TODO){
 	file,_:=os.OpenFile("TODO.txt",os.O_APPEND,0666)
 	file.WriteString(text.Content)
@@ -59,14 +70,7 @@ func change(text TODO,ind int){
 func main() {
 	r:=gin.Default()
 
-	file,_:=os.OpenFile("TODO.txt",os.O_RDWR,0666)
-	read,_:=io.ReadAll(file)
-	readline:=strings.Split(string(read),"\n")
-	lenth:=len(readline)/2
-	for i:=0;i<lenth;i++{
-		todos[i].Content,todos[i].Done=readline[2*i],readline[i*2+1]
-	}
-	file.Close()
+	readTODO()
 
 
 	//add TODO
