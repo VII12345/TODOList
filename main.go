@@ -70,6 +70,8 @@ func check(user string) (a bool) {
 	return false
 }
 
+
+
 //读取过去数据
 func readDATA(user string) {
 	name := user + ".txt"
