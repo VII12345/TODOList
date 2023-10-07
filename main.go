@@ -70,6 +70,7 @@ func check(user string) (a bool) {
 	return false
 }
 
+//读取过去数据
 func readDATA(user string) {
 	name := user + ".txt"
 	file, _ := os.OpenFile(name, os.O_RDWR, 0666)
